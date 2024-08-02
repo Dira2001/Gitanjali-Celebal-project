@@ -1,0 +1,57 @@
+pip install schedule pytz
+import requests
+import json
+import schedule
+import time
+from datetime import datetime
+import pytz
+
+# List of countries
+countries = ['india', 'us', 'uk', 'china', 'russia']
+
+# Base URL for the REST API
+base_url = "https://restcountries.com/v3.1/name/"
+
+# Function to fetch data and save it to a JSON file
+def fetch_and_save_country_data(country_name):
+    url = f"{base_url}{country_name}"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        country_data = response.json()
+        
+        with open(f"{country_name}.json", 'w') as json_file:
+            json.dump(country_data, json_file, indent=4)
+        
+        print(f"Data for {country_name} saved successfully.")
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch data for {country_name}: {e}")
+
+# Function to run the pipeline
+def run_pipeline():
+    for country in countries:
+        fetch_and_save_country_data(country)
+
+# IST timezone
+ist = pytz.timezone('Asia/Kolkata')
+
+# Schedule the pipeline to run at 12:00 AM and 12:00 PM IST
+schedule.every().day.at("00:00").do(run_pipeline)
+schedule.every().day.at("12:00").do(run_pipeline)
+
+# Function to keep the script running
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# Print a message with the current time in IST
+def print_current_time():
+    now_ist = datetime.now(ist)
+    print(f"Scheduler started at {now_ist.strftime('%Y-%m-%d %H:%M:%S')} IST")
+
+# Print the current time in IST and start the scheduler
+print_current_time()
+run_scheduler()
