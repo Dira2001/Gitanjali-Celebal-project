@@ -1,0 +1,21 @@
+from azure.datafactory import DataFactoryManagementClient
+
+# Create parent pipeline
+pipeline_run = data_factory_client.pipelines.create_or_update(
+    resource_group_name="your_resource_group",
+    factory_name="your_factory_name",
+    pipeline_name="copy_customer_data",
+    pipeline={
+        # Pipeline definition with activities
+    }
+)
+
+# Create child pipeline
+child_pipeline_run = data_factory_client.pipelines.create_or_update(
+    resource_group_name="your_resource_group",
+    factory_name="your_factory_name",
+    pipeline_name="copy_product_data",
+    pipeline={
+        # Pipeline definition with activities
+    }
+)
