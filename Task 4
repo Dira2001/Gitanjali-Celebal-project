@@ -1,0 +1,54 @@
+from azure.datafactory import DataFactoryManagementClient
+
+# Parent Pipeline
+pipeline_run = data_factory_client.pipelines.create_or_update(
+    resource_group_name="your_resource_group",
+    factory_name="your_factory_name",
+    pipeline_name="copy_customer_data",
+    pipeline={
+        # ... other activities ...
+        "activities": [
+            # ... Lookup activity to get customer count ...
+            {
+                "name": "SetCustomerCount",
+                "type": "SetVariable",
+                "typeProperties": {
+                    "variableName": "customer_count"
+                }
+            },
+            # ... Copy activity ...
+            {
+                "name": "ExecuteProductPipeline",
+                "type": "ExecutePipeline",
+                "typeProperties": {
+                    "pipelineName": "copy_product_data",
+                    "parameters": {
+                        "customer_count": "@pipeline().variables['customer_count']"
+                    }
+                }
+            }
+        ]
+    }
+)
+
+# Child Pipeline
+child_pipeline_run = data_factory_client.pipelines.create_or_update(
+    resource_group_name="your_resource_group",
+    factory_name="your_factory_name",
+    pipeline_name="copy_product_data",
+    pipeline={
+        "parameters": {
+            "customer_count": {
+                "type": "integer"
+            }
+        },
+        "activities": [
+            {
+                "name": "CopyProductData",
+                "type": "Copy",
+                # ... copy activity logic ...
+                # Use @pipeline().parameters.customer_count in the copy activity if needed
+            }
+        ]
+    }
+)
